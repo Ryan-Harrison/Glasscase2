@@ -1,16 +1,18 @@
-const gulp = require('gulp');
-const babel = require('gulp-babel');
-const uglify = require('gulp-uglify');
-const rename = require('gulp-rename');
-const sass = require('gulp-sass')(require('sass'));
-const cssnano = require('gulp-cssnano');
-const concat = require('gulp-concat');
+const gulp          = require('gulp');
+const babel         = require('gulp-babel');
+const uglify        = require('gulp-uglify');
+const rename        = require('gulp-rename');
+const sass          = require('gulp-sass')(require('sass'));
+const cssnano       = require('gulp-cssnano');
+const concat        = require('gulp-concat');
+const browserSync   = require('browser-sync').create();
 
 gulp.task('sass', function() {    
     return gulp.src('src/app/sass/style.scss')       
         .pipe(sass())       
         .pipe(cssnano())       
-        .pipe(gulp.dest('src/dist/css')); 
+        .pipe(gulp.dest('src/dist/css'))
+        .pipe(browserSync.stream()); 
 });
 
 gulp.task('js', function() {
@@ -24,7 +26,21 @@ gulp.task('js', function() {
 });
 
 gulp.task('default', function(done) {
+
+    browserSync.init({
+        server: {
+            baseDir: "./src/content"
+        }
+    });
+
     gulp.task('sass');
     gulp.task('js');
+
+    gulp.watch(['src/app/sass/*.scss', 'src/app/js/plugins/*.js', 'src/app/js/*.js'], function(path) {
+        gulp.task('sass');
+        gulp.task('js');
+    });
+    gulp.watch(['src/content/*.html', 'src/dist/js/*.js']).on('change', browserSync.reload);
+
     done();
 });
