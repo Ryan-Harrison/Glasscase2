@@ -7,15 +7,15 @@ const cssnano       = require('gulp-cssnano');
 const concat        = require('gulp-concat');
 const browserSync   = require('browser-sync').create();
 
-gulp.task('sass', function() {    
-    return gulp.src('src/app/sass/style.scss')       
-        .pipe(sass())       
+function css () {    
+    return gulp.src('src/app/sass/style.scss')
+        .pipe(sass.sync().on('error', sass.logError))   
         .pipe(cssnano())       
         .pipe(gulp.dest('src/dist/css'))
-        .pipe(browserSync.stream()); 
-});
+        .pipe(browserSync.stream());
+};
 
-gulp.task('js', function() {
+function js () {
     return gulp.src(['src/app/js/plugins/*.js', 'src/app/js/*.js'])
         .pipe(concat('all.js'))
         .pipe(uglify())
@@ -23,24 +23,30 @@ gulp.task('js', function() {
             presets: ['@babel/env']
         }))
         .pipe(gulp.dest('src/dist/js'));
-});
+};
 
-gulp.task('default', function(done) {
+exports.buildcss = css;
+exports.buildjs = js;
+exports.watch = function () {
+    gulp.watch('src/app/sass/*.scss', css);
+    gulp.watch(['src/app/js/plugins/*.js', 'src/app/js/*.js'], js);
+}
 
-    browserSync.init({
-        server: {
-            baseDir: "./src/content"
-        }
-    });
+// gulp.task('default', function(done) {
 
-    gulp.task('sass');
-    gulp.task('js');
+//     // browserSync.init({
+//     //     server: {
+//     //         baseDir: "./"
+//     //     }
+//     // });
+//     gulp.task('sass');
+//     gulp.task('js');
+//     done();
+    
+//     // gulp.watch(['src/app/sass/*.scss', 'src/app/js/plugins/*.js', 'src/app/js/*.js'], function(path) {
+//     //     gulp.task('sass');
+//     //     gulp.task('js');
+//     // });
+//     // gulp.watch(['src/content/*.html', 'src/dist/js/*.js']).on('change', browserSync.reload);
 
-    gulp.watch(['src/app/sass/*.scss', 'src/app/js/plugins/*.js', 'src/app/js/*.js'], function(path) {
-        gulp.task('sass');
-        gulp.task('js');
-    });
-    gulp.watch(['src/content/*.html', 'src/dist/js/*.js']).on('change', browserSync.reload);
-
-    done();
-});
+// });
